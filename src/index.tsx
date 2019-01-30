@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 export default function useObject<T>(obj: T) {
-  const [state, setObj] = useState(Object.assign({}, obj));
+  const [state, setObj] = useState({ ...obj });
 
   const setState = (next: Partial<T>) => {
     setObj(prev => {
@@ -9,7 +9,16 @@ export default function useObject<T>(obj: T) {
     });
   };
 
-  return { state, setState };
+  const prevState = () => {
+    let result: any;
+    setObj(prev => {
+      result = prev;
+      return prev;
+    });
+    return result as T;
+  };
+
+  return { state, setState, prevState };
 }
 
 export function alphaUseObject2<T>(obj: T) {
