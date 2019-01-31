@@ -3,9 +3,16 @@ import { useState } from "react";
 export default function useObject<T>(obj: T) {
   const [state, setObj] = useState({ ...obj });
 
-  const setState = (next: Partial<T>) => {
+  type func = (prev: T) => Partial<T>;
+  type obj = Partial<T>;
+
+  const setState = <U extends func | obj>(next: U) => {
     setObj(prev => {
-      return { ...prev, ...next };
+      if (typeof JSON.stringify(next) === "string") {
+        return { ...prev, ...next };
+      } else {
+        return { ...prev, ...(next as func)(prev) };
+      }
     });
   };
 
@@ -18,7 +25,13 @@ export default function useObject<T>(obj: T) {
     return result as T;
   };
 
-  return { state, setState, prevState };
+  const updateState = (next: func) => {
+    setObj(prev => {
+      return { ...prev, ...next(prev) };
+    });
+  };
+
+  return { state, setState, prevState, updateState };
 }
 
 export function alphaUseObject2<T>(obj: T) {
